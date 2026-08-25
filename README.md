@@ -23,6 +23,7 @@ The project is implemented using basic C++ concepts such as **functions, arrays,
 ## 🕹️ How to Play
 
 When the game starts, you will be asked to choose a game mode:
+<br>
 
 ```text
 Choose game mode:
