@@ -1,4 +1,5 @@
 #include<iostream>
+#include <algorithm>
 #include <cstdlib>
 #include <ctime> 
 
@@ -39,7 +40,7 @@ void drawboard() {
     cout << endl;
 }
 
-bool isEmpty(int pos){
+/*bool isEmpty(int pos){
 
     switch(pos){
         case 1:
@@ -130,6 +131,33 @@ void takeIPo(int pos){
             board[2][2]= 'O';
             break;
     }
+}*/
+
+//optimise isempty, inputx, inputo
+
+bool isEmpty(int pos){
+    int row= (pos-1)/3;
+    int col= (pos-1)%3;
+
+    return board[row][col]!= 'X' && board[row][col]!= 'O';
+}
+
+bool isBoardFull(){
+    for(int i=0; i< 3; i++){
+        for(int j=0; j<3; j++){
+            if(board[i][j]!= 'X' && board[i][j]!='O'){
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+void makeMove(int pos, char player){
+    int row= (pos-1)/3;
+    int col= (pos-1)%3;
+
+    board[row][col]= player;
 }
 
 char winner(char board[3][3]){
@@ -172,15 +200,109 @@ char winner(char board[3][3]){
     return 0;
 }
 
-//now including easy AI moves
 
-void aiMove(){
-    int pos;
-    do{ 
-        pos= rand() %9 + 1;
-    }while(!isEmpty(pos));
-    cout<< "Computer's turn: " << pos << endl;
-    takeIPo(pos);
+
+//minimax
+
+int minimax(bool isMaximizing) {
+
+    char result = winner(board);
+
+    // AI wins
+    if(result == 'O') {
+        return 10;
+    }
+
+    // Player wins
+    if(result == 'X') {
+        return -10;
+    }
+
+    // Draw
+    if(isBoardFull()) {
+        return 0;
+    }
+
+    // AI's turn - maximize score
+    if(isMaximizing) {
+
+        int bestScore = -1000;
+
+        for(int pos = 1; pos <= 9; pos++) {
+
+            if(isEmpty(pos)) {
+
+                makeMove(pos, 'O');
+
+                int score = minimax(false);
+
+                // Restore empty position
+                makeMove(pos, '0' + pos);
+
+                bestScore = max(bestScore, score);
+            }
+        }
+
+        return bestScore;
+    }
+
+    // Player's turn - minimize score
+    else {
+
+        int bestScore = 1000;
+
+        for(int pos = 1; pos <= 9; pos++) {
+
+            if(isEmpty(pos)) {
+
+                makeMove(pos, 'X');
+
+                int score = minimax(true);
+
+                // Restore empty position
+                makeMove(pos, '0' + pos);
+
+                bestScore = min(bestScore, score);
+            }
+        }
+
+        return bestScore;
+    }
+}
+
+int bestMove() {
+
+    int bestScore = -1000;
+    int move = -1;
+
+    for(int pos = 1; pos <= 9; pos++) {
+
+        if(isEmpty(pos)) {
+
+            makeMove(pos, 'O');
+
+            int score = minimax(false);
+
+            makeMove(pos, '0' + pos);
+
+            if(score > bestScore) {
+                bestScore = score;
+                move = pos;
+            }
+        }
+    }
+
+    return move;
+}
+//now including  AI moves
+
+void aiMove() {
+
+    int pos = bestMove();
+
+    cout << "Computer's turn: " << pos << endl;
+
+    makeMove(pos, 'O');
 }
 
 int main() {
@@ -203,7 +325,7 @@ int main() {
             cout << "Player X enter position: ";
             cin >> pos;
             if(isEmpty(pos)){
-                takeIPx(pos);
+                makeMove(pos, 'X');
 
                 if(winner(board)!=0){
                     drawboard();
@@ -226,7 +348,7 @@ int main() {
                 cin >> pos;
 
                 if(isEmpty(pos)){
-                takeIPo(pos);
+                makeMove(pos, 'O');
                     if(winner(board)!=0){
                         drawboard();
                         cout << "The winner is: "
