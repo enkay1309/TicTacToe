@@ -39,7 +39,7 @@ void drawboard() {
     cout << endl;
 }
 
-bool isEmpty(int pos){
+/*bool isEmpty(int pos){
 
     switch(pos){
         case 1:
@@ -130,6 +130,33 @@ void takeIPo(int pos){
             board[2][2]= 'O';
             break;
     }
+}*/
+
+//optimise isempty, inputx, inputo
+
+bool isEmpty(int pos){
+    int row= (pos-1)/3;
+    int col= (pos-1)%3;
+
+    return board[row][col]!= 'X' && board[row][col]!= 'O';
+}
+
+bool isBoardFull(){
+    for(int i=0; i< 3; i++){
+        for(int j=0; j<3; j++){
+            if(board[i][j]!= 'X' && board[i][j]!='O'){
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+void makeMove(int pos, char player){
+    int row= (pos-1)/3;
+    int col= (pos-1)%3;
+
+    board[row][col]= player;
 }
 
 char winner(char board[3][3]){
@@ -180,8 +207,9 @@ void aiMove(){
         pos= rand() %9 + 1;
     }while(!isEmpty(pos));
     cout<< "Computer's turn: " << pos << endl;
-    takeIPo(pos);
+    makeMove(pos, 'O');
 }
+
 
 int main() {
     srand(time(0)); 
@@ -203,7 +231,7 @@ int main() {
             cout << "Player X enter position: ";
             cin >> pos;
             if(isEmpty(pos)){
-                takeIPx(pos);
+                makeMove(pos, 'X');
 
                 if(winner(board)!=0){
                     drawboard();
@@ -226,7 +254,7 @@ int main() {
                 cin >> pos;
 
                 if(isEmpty(pos)){
-                takeIPo(pos);
+                makeMove(pos, 'O');
                     if(winner(board)!=0){
                         drawboard();
                         cout << "The winner is: "
