@@ -1,4 +1,5 @@
 #include<iostream>
+#include <algorithm>
 #include <cstdlib>
 #include <ctime> 
 
@@ -199,17 +200,110 @@ char winner(char board[3][3]){
     return 0;
 }
 
-//now including easy AI moves
 
-void aiMove(){
-    int pos;
-    do{ 
-        pos= rand() %9 + 1;
-    }while(!isEmpty(pos));
-    cout<< "Computer's turn: " << pos << endl;
-    makeMove(pos, 'O');
+
+//minimax
+
+int minimax(bool isMaximizing) {
+
+    char result = winner(board);
+
+    // AI wins
+    if(result == 'O') {
+        return 10;
+    }
+
+    // Player wins
+    if(result == 'X') {
+        return -10;
+    }
+
+    // Draw
+    if(isBoardFull()) {
+        return 0;
+    }
+
+    // AI's turn - maximize score
+    if(isMaximizing) {
+
+        int bestScore = -1000;
+
+        for(int pos = 1; pos <= 9; pos++) {
+
+            if(isEmpty(pos)) {
+
+                makeMove(pos, 'O');
+
+                int score = minimax(false);
+
+                // Restore empty position
+                makeMove(pos, '0' + pos);
+
+                bestScore = max(bestScore, score);
+            }
+        }
+
+        return bestScore;
+    }
+
+    // Player's turn - minimize score
+    else {
+
+        int bestScore = 1000;
+
+        for(int pos = 1; pos <= 9; pos++) {
+
+            if(isEmpty(pos)) {
+
+                makeMove(pos, 'X');
+
+                int score = minimax(true);
+
+                // Restore empty position
+                makeMove(pos, '0' + pos);
+
+                bestScore = min(bestScore, score);
+            }
+        }
+
+        return bestScore;
+    }
 }
 
+int bestMove() {
+
+    int bestScore = -1000;
+    int move = -1;
+
+    for(int pos = 1; pos <= 9; pos++) {
+
+        if(isEmpty(pos)) {
+
+            makeMove(pos, 'O');
+
+            int score = minimax(false);
+
+            makeMove(pos, '0' + pos);
+
+            if(score > bestScore) {
+                bestScore = score;
+                move = pos;
+            }
+        }
+    }
+
+    return move;
+}
+//now including  AI moves
+
+void aiMove() {
+
+    int pos = bestMove();
+
+    cout << "Computer's turn: " << pos << endl;
+
+    makeMove(pos, 'O');
+}
 
 int main() {
     srand(time(0)); 
